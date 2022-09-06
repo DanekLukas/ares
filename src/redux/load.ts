@@ -6,6 +6,10 @@ type Data = {
   DIC: string
   OF: string
   DV: string
+  NPF: string
+  UC: string
+  PB: string
+  OC: string
 }
 
 export interface DataState {
@@ -17,7 +21,10 @@ interface Pass {
   ico: string
 }
 
-const initialState: DataState = { data: { ICO: '', DIC: '', OF: '', DV: '' }, status: 'idle' }
+const initialState: DataState = {
+  data: { ICO: '', DIC: '', OF: '', DV: '', NPF: '', UC: '', PB: '', OC: '' },
+  status: 'idle',
+}
 
 export const loadAsync = createAsyncThunk('load/total', async (state: Pass) => {
   const getData = async () => {

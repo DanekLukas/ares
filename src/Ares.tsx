@@ -28,6 +28,10 @@ const Ares = () => {
     DIC: 'Dič',
     OF: 'Obchodní jméno',
     DV: 'Datum vložení',
+    NPF: 'Typ',
+    UC: 'Ulice',
+    PB: 'Město',
+    OC: 'Obor činnosti',
   }
 
   useEffect(() => {
@@ -110,7 +114,15 @@ const Ares = () => {
                     <div key={index}>
                       <span style={{ color: 'gray' }}>{rows[key as keyof typeof load]}:</span>
                       <br />
-                      {load[key as keyof typeof load]}
+                      {key === 'OC'
+                        ? load[key as keyof typeof load].split('*').map(line => {
+                            return (
+                              <>
+                                {line} <br />
+                              </>
+                            )
+                          })
+                        : load[key as keyof typeof load]}
                     </div>
                   </>
                 )
