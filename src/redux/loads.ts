@@ -1,5 +1,5 @@
 import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit'
-import axios from 'axios'
+import { postData } from './load'
 
 type Data = Array<{
   name: string
@@ -20,11 +20,9 @@ const initialState: DataState = { data: [], status: 'idle' }
 
 export const loadsAsync = createAsyncThunk('loads/total', async (state: Pass) => {
   const getData = async () => {
-    const { data, error } = (
-      await axios.post('/', {
-        name: state.name,
-      })
-    ).data as { data?: Data; error?: string }
+    const { data, error } = (await postData('/', {
+      name: state.name,
+    })) as { data?: Data; error?: string }
     return error === '0' ? data || initialState.data : initialState.data
   }
   return await getData()

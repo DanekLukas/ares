@@ -3,7 +3,7 @@ import { loadAsync, selectData, selectStatus } from './redux/load'
 import { loadsAsync, selectsData, selectsStatus } from './redux/loads'
 
 import { useAppDispatch, useAppSelector } from './hooks'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 const Ares = () => {
   const { loadIcoRedux } = useAppSelector(selectData)
   const { loadsNameRedux } = useAppSelector(selectsData)
@@ -22,6 +22,11 @@ const Ares = () => {
   const [icoInput, setIcoInput] = useState('')
   const [icoInputError, setIcoInputError] = useState(false)
 
+  const [, updateState] = useState<Object>()
+  const forceUpdate = useCallback(() => updateState({}), [])
+  const perPage = 10
+  const page = useRef(0)
+  const max = useRef(0)
   const cols = { name: 'Obchodní jméno', addr: 'Adresa' }
   const rows = {
     ICO: 'Ičo',
@@ -54,6 +59,7 @@ const Ares = () => {
 
   useEffect(() => {
     setNames(loadsNameRedux)
+    max.current = Math.ceil(loadsNameRedux.length / perPage) - 1
   }, [loadsNameRedux])
 
   useEffect(() => {
@@ -75,6 +81,36 @@ const Ares = () => {
     const tmp = statRedux === 'loading' ? <div>Načítám ...</div> : null
     setWait(tmp)
   }, [statRedux])
+
+  const list = (pageChange?: number) => {
+    page.current = pageChange ? page.current + pageChange : pageChange === 0 ? 0 : max.current
+    if (page.current > max.current) page.current = max.current
+    if (page.current < 0) page.current = 0
+    forceUpdate()
+  }
+
+  const pagination = () => (
+    <div className='pagination'>
+      <button type='button' onClick={() => list(0)}>
+        ⇦
+      </button>
+      <button type='button' onClick={() => list(-1)}>
+        ⬅
+      </button>
+      {page.current + 1}
+      <button type='button' onClick={() => list(1)}>
+        ➡
+      </button>
+      <button type='button' onClick={() => list()}>
+        ⇨
+      </button>
+    </div>
+  )
+
+  const resetPage = () => {
+    page.current = 0
+    forceUpdate()
+  }
 
   return (
     <div style={{ display: 'flex' }}>
@@ -133,6 +169,7 @@ const Ares = () => {
           onSubmit={e => {
             e.preventDefault()
             setName(nameRef.current?.value || '')
+            resetPage()
           }}
         >
           <label htmlFor='name' style={{ marginRight: '2rem' }}>
@@ -145,39 +182,63 @@ const Ares = () => {
           ? wait
           : names &&
             names.length > 0 && (
-              <table>
-                <tr>
-                  {Object.keys(cols).map((key: string, index: number) => (
-                    <th key={index} onClick={e => setSortBy(key)}>
-                      {cols[key as keyof typeof cols]}
-                    </th>
-                  ))}
-                </tr>
-                <tbody>
-                  {(sortBy
-                    ? Object.entries(names)
-                        .sort(([key1, value1], [key2, value2]) =>
-                          value1[sortBy as keyof typeof value1].localeCompare(
-                            value2[sortBy as keyof typeof value2]
-                          )
-                        )
-                        .map(name => name[1] || '')
-                    : names
-                  ).map((name, index) => (
-                    <tr
-                      key={index}
-                      onClick={e => {
-                        setIco(name.ico)
-                      }}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {Object.keys(cols).map((key, index) => (
-                        <td key={index}>{name[key as keyof typeof name]}</td>
+              <>
+                <table>
+                  <thead>
+                    {max.current > 1 && (
+                      <tr>
+                        <th colSpan={Object.keys(cols).length}>{pagination()}</th>
+                      </tr>
+                    )}
+                    <tr>
+                      {Object.keys(cols).map((key: string, index: number) => (
+                        <th
+                          key={index}
+                          onClick={e => {
+                            setSortBy(key)
+                            resetPage()
+                          }}
+                        >
+                          {cols[key as keyof typeof cols]}
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {(sortBy
+                      ? Object.entries(names)
+                          .sort(([key1, value1], [key2, value2]) =>
+                            value1[sortBy as keyof typeof value1].localeCompare(
+                              value2[sortBy as keyof typeof value2]
+                            )
+                          )
+                          .map(name => name[1] || '')
+                      : names
+                    )
+                      .slice(page.current * perPage, (page.current + 1) * perPage)
+                      .map((name, index) => (
+                        <tr
+                          key={index}
+                          onClick={e => {
+                            setIco(name.ico)
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {Object.keys(cols).map((key, index) => (
+                            <td key={index}>{name[key as keyof typeof name]}</td>
+                          ))}
+                        </tr>
+                      ))}
+                  </tbody>
+                  {max.current > 1 && (
+                    <tfoot>
+                      <tr>
+                        <th colSpan={Object.keys(cols).length}>{pagination()}</th>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </>
             )}
       </div>
     </div>
