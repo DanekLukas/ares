@@ -114,7 +114,7 @@ const Ares = () => {
 
   return (
     <div style={{ display: 'flex' }}>
-      <div style={{ padding: '2rem' }}>
+      <div className='column'>
         <form
           onSubmit={e => {
             e.preventDefault()
@@ -164,7 +164,7 @@ const Ares = () => {
                 )
             )}
       </div>
-      <div style={{ padding: '2rem' }}>
+      <div className='column'>
         <form
           onSubmit={e => {
             e.preventDefault()
@@ -183,7 +183,7 @@ const Ares = () => {
           : names &&
             names.length > 0 && (
               <>
-                <table>
+                <table style={{ width: '100%' }}>
                   <thead>
                     {max.current > 1 && (
                       <tr>
@@ -198,6 +198,7 @@ const Ares = () => {
                             setSortBy(key)
                             resetPage()
                           }}
+                          style={{ width: '50%' }}
                         >
                           {cols[key as keyof typeof cols]}
                         </th>
